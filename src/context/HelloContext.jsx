@@ -1,14 +1,31 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { supabase } from '../supabaseClient'; 
+// Import fungsi-fungsi Firebase
+import { auth, db } from '../firebase';
+import { 
+  onAuthStateChanged, 
+  signOut 
+} from 'firebase/auth';
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  onSnapshot,
+  query, 
+  orderBy 
+} from 'firebase/firestore';
 
 const HelloContext = createContext();
 
 export const HelloProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  
-  // Default Profil Kosong
+
+  // Default Profile
   const defaultProfile = {
     fullName: '',
     nickName: 'User',
@@ -18,113 +35,115 @@ export const HelloProvider = ({ children }) => {
     timeZone: 'wita',
     phone: '',
     email: '',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop'
+    avatar: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200&h=200&fit=crop'
   };
 
   const [profile, setProfile] = useState(defaultProfile);
 
-  const updateProfile = (newData) => {
-    setProfile(newData);
-    if (user) {
-      localStorage.setItem(`hellocare_profile_${user.id}`, JSON.stringify(newData));
-    }
-  };
-
-  // --- AUTHENTICATION ---
+  // --- 1. MONITOR AUTH & PROFILE (REALTIME) ---
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user || null;
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-
+      
       if (currentUser) {
-        // Load profil jika user ada
-        const savedProfile = localStorage.getItem(`hellocare_profile_${currentUser.id}`);
-        if (savedProfile) {
-          setProfile(JSON.parse(savedProfile));
+        // Jika login, ambil data profil dari Firestore
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setProfile(docSnap.data());
         } else {
-          // Setup profil baru untuk user baru
-          let phoneFromEmail = '';
-          if (currentUser.email && currentUser.email.includes('@hellocare.demo')) {
-             phoneFromEmail = currentUser.email.split('@')[0];
-          }
-          const newProfile = { ...defaultProfile, phone: phoneFromEmail, email: currentUser.email || '' };
-          setProfile(newProfile);
+          // Jika user baru belum punya data, set default tapi jangan simpan dulu ke DB
+          // Biarkan user save sendiri nanti, atau simpan otomatis di sini (opsional)
+          setProfile(defaultProfile);
         }
       } else {
         setProfile(defaultProfile);
       }
-    };
-
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user || null);
-      if (!session?.user) {
-        setProfile(defaultProfile); // Reset profil jika sesi habis
-      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
-  // --- PERBAIKAN FUNGSI LOGOUT ---
+  // --- 2. LOGOUT ---
   const logout = async () => {
+    await signOut(auth);
+    setUser(null);
+    setProfile(defaultProfile);
+    localStorage.clear(); // Bersihkan cache biar aman
+  };
+
+  // --- 3. UPDATE PROFILE (FIREBASE VERSION) ---
+  const updateProfile = async (newData) => {
+    if (!user) return { success: false, error: "No user" };
+
     try {
-      // 1. Request logout ke Supabase
-      await supabase.auth.signOut();
+      // Di Firebase, kita pakai setDoc dengan { merge: true }
+      // Ini artinya: Kalau belum ada, buat baru. Kalau sudah ada, update yang berubah aja.
+      await setDoc(doc(db, "users", user.uid), {
+        ...newData,
+        email: newData.email || user.email || "", // Pastikan email tersimpan
+        phone: user.phoneNumber, // Simpan nomor HP dari Auth
+        updatedAt: new Date()
+      }, { merge: true });
+
+      setProfile(newData); // Update state lokal
+      return { success: true };
     } catch (error) {
-      console.error("Logout Error:", error);
-    } finally {
-      // 2. PAKSA Hapus data di state aplikasi (Apapun yang terjadi)
-      setUser(null);
-      setProfile(defaultProfile);
+      console.error("Error updating profile:", error);
+      return { success: false, error: error.message };
     }
   };
 
-  // --- BOOKING LOGIC ---
-  const fetchBookings = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      setBookings(data);
-    } catch (error) {
-      console.error("Error:", error.message);
-    } finally {
+  // --- 4. BOOKING LOGIC (REALTIME LISTENER) ---
+  useEffect(() => {
+    // onSnapshot membuat data booking selalu update realtime tanpa refresh
+    const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const bookingsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setBookings(bookingsData);
       setLoading(false);
-    }
-  };
+    });
 
-  useEffect(() => { fetchBookings(); }, []);
+    return () => unsubscribe();
+  }, []);
 
   const addBooking = async (newBooking) => {
     try {
-      const { data, error } = await supabase.from('bookings').insert([{ 
-            patient_name: newBooking.patient,
-            service: newBooking.service,
-            doctor_id: newBooking.doctor_id,
-            date: newBooking.date,
-            time: newBooking.time,
-            status: 'Pending'
-          }]).select();
-      if (error) throw error;
-      setBookings(prev => [data[0], ...prev]);
+      await addDoc(collection(db, "bookings"), {
+        patient_name: newBooking.patient,
+        service: newBooking.service,
+        doctor_id: newBooking.doctor_id, // Tetap simpan ID/Nama dokter
+        date: newBooking.date,
+        time: newBooking.time,
+        status: 'Pending',
+        createdAt: new Date() // Penting untuk sorting
+      });
       return true;
     } catch (error) {
-      alert("Gagal: " + error.message);
+      alert("Gagal booking: " + error.message);
       return false;
     }
   };
 
   const updateBookingStatus = async (id, newStatus) => {
-    await supabase.from('bookings').update({ status: newStatus }).eq('id', id);
-    setBookings(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
+    try {
+      const bookingRef = doc(db, "bookings", id);
+      await updateDoc(bookingRef, { status: newStatus });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const deleteBooking = async (id) => {
-    await supabase.from('bookings').delete().eq('id', id);
-    setBookings(prev => prev.filter(item => item.id !== id));
+    try {
+      await deleteDoc(doc(db, "bookings", id));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (

@@ -9,21 +9,17 @@ export default function Navbar() {
   const { user, logout, profile } = useHello();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
+ const handleLogout = async () => {
     const isConfirmed = window.confirm("Apakah Anda yakin ingin keluar?");
 
     if (isConfirmed) {
-      // 1. Jalankan proses logout (tunggu sampai selesai/finally)
-      await logout();
+      // 1. Tunggu proses logout selesai 100%
+      await logout(); 
       
-      // 2. Pindah ke Halaman Utama (Replace history agar tidak bisa di-back)
+      // 2. Navigasi manual ke Home (Lebih aman daripada reload paksa)
+      // Gunakan navigate dari react-router-dom, JANGAN window.location.href
       navigate('/', { replace: true });
     }
-  };
-
-  const getUserName = () => {
-    // Fallback aman jika profile/nickName belum siap
-    return profile?.nickName || "User";
   };
 
   return (
@@ -45,7 +41,7 @@ export default function Navbar() {
             </div>
             <div className="hidden md:block text-left pr-2">
               <p className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
-                Hi, {getUserName()}
+                Hi, {profile?.nickName || "User"}
               </p>
               <p className="text-xs text-gray-400">Pasien</p>
             </div>
@@ -54,7 +50,7 @@ export default function Navbar() {
           <div className="h-8 w-px bg-gray-200 mx-1 hidden md:block"></div>
 
           <button 
-            type="button" // Pastikan ini type button
+            type="button"
             onClick={handleLogout}
             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
             title="Keluar"

@@ -11,11 +11,10 @@ export default function UserProfilePage() {
   
   const fileInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // Loading state
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [formData, setFormData] = useState(profile);
+  const [formData, setFormData] = useState(profile || {});
 
-  // Sinkronisasi data dari Database ke Form
   useEffect(() => {
     if (profile) {
       setFormData(profile);
@@ -26,17 +25,27 @@ export default function UserProfilePage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Convert Gambar ke Base64 agar bisa disimpan di database text
+  // Kompresi Gambar (PENTING AGAR TIDAK MACET)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2000000) { // Batas 2MB
-        alert("Ukuran gambar terlalu besar! Maksimal 2MB.");
+      if (file.size > 5000000) { // Limit 5MB
+        alert("Ukuran gambar terlalu besar! Maksimal 5MB.");
         return;
       }
+      
+      // Ubah ke Base64
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, avatar: reader.result }));
+        const base64String = reader.result;
+        
+        // Cek panjang string (jika terlalu panjang, Supabase mungkin menolak)
+        if (base64String.length > 2000000) { // Sekitar 1.5MB text
+             alert("Gambar terlalu detail/besar untuk disimpan. Coba gunakan gambar lain yang lebih kecil.");
+             return;
+        }
+        
+        setFormData(prev => ({ ...prev, avatar: base64String }));
       };
       reader.readAsDataURL(file);
     }
@@ -48,15 +57,26 @@ export default function UserProfilePage() {
     }
   };
 
+  // --- PERBAIKAN LOGIKA SIMPAN ---
   const handleEditToggle = async () => {
     if (isEditing) {
-      // Simpan ke Supabase
-      setIsSaving(true);
-      await updateProfile(formData);
-      setIsSaving(false);
-      alert("Data profil berhasil disimpan ke Database!");
+      setIsSaving(true); // Mulai Loading
+      
+      // Panggil fungsi simpan dan tunggu hasilnya
+      const result = await updateProfile(formData);
+      
+      setIsSaving(false); // Stop Loading
+
+      if (result.success) {
+        alert("Profil berhasil disimpan ke Database!");
+        setIsEditing(false); // Tutup mode edit
+      } else {
+        alert("Gagal menyimpan: " + result.error + "\n\nCek koneksi atau coba gambar yang lebih kecil.");
+        // Jangan tutup mode edit biar user bisa coba lagi
+      }
+    } else {
+      setIsEditing(true); // Buka mode edit
     }
-    setIsEditing(!isEditing);
   };
 
   return (
