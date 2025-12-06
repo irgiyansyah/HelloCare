@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
 
-                      {/* Kolom 3: Pembayaran (BARU) */}
+                      {/* Kolom 3: Pembayaran */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div className="bg-gray-100 p-1.5 rounded-lg text-gray-600">
@@ -223,7 +223,6 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                           
-                          {/* Tombol Aksi hanya untuk Pending */}
                           {booking.status === 'Pending' && (
                             <>
                               <button 
