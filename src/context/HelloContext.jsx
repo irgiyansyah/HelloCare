@@ -114,17 +114,36 @@ export const HelloProvider = ({ children }) => {
   const addBooking = async (newBooking) => {
     try {
       await addDoc(collection(db, "bookings"), {
+        userId: user?.uid, // PENTING: Simpan ID User
         patient_name: newBooking.patient,
         service: newBooking.service,
-        doctor_id: newBooking.doctor_id, // Tetap simpan ID/Nama dokter
+        doctor_id: newBooking.doctor_id,
         date: newBooking.date,
         time: newBooking.time,
+        payment_method: newBooking.paymentMethod || 'Bayar di Klinik',
+        price: newBooking.price || 0,
         status: 'Pending',
-        createdAt: new Date() // Penting untuk sorting
+        createdAt: new Date()
       });
       return true;
     } catch (error) {
       alert("Gagal booking: " + error.message);
+      return false;
+    }
+  };
+
+  const rescheduleBooking = async (bookingId, newDate, newTime) => {
+    try {
+      const bookingRef = doc(db, "bookings", bookingId);
+      await updateDoc(bookingRef, {
+        date: newDate,
+        time: newTime,
+        status: 'Rescheduled', // Opsional: Beri tanda status berubah
+        updatedAt: new Date()
+      });
+      return true;
+    } catch (error) {
+      console.error("Gagal reschedule:", error);
       return false;
     }
   };
