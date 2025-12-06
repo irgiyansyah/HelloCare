@@ -53,8 +53,6 @@ export const HelloProvider = ({ children }) => {
         if (docSnap.exists()) {
           setProfile(docSnap.data());
         } else {
-          // Jika user baru belum punya data, set default tapi jangan simpan dulu ke DB
-          // Biarkan user save sendiri nanti, atau simpan otomatis di sini (opsional)
           setProfile(defaultProfile);
         }
       } else {
@@ -70,24 +68,22 @@ export const HelloProvider = ({ children }) => {
     await signOut(auth);
     setUser(null);
     setProfile(defaultProfile);
-    localStorage.clear(); // Bersihkan cache biar aman
+    localStorage.clear(); 
   };
 
-  // --- 3. UPDATE PROFILE (FIREBASE VERSION) ---
+  // --- 3. UPDATE PROFILE ---
   const updateProfile = async (newData) => {
     if (!user) return { success: false, error: "No user" };
 
     try {
-      // Di Firebase, kita pakai setDoc dengan { merge: true }
-      // Ini artinya: Kalau belum ada, buat baru. Kalau sudah ada, update yang berubah aja.
       await setDoc(doc(db, "users", user.uid), {
         ...newData,
-        email: newData.email || user.email || "", // Pastikan email tersimpan
-        phone: user.phoneNumber, // Simpan nomor HP dari Auth
+        email: newData.email || user.email || "",
+        phone: user.phoneNumber, 
         updatedAt: new Date()
       }, { merge: true });
 
-      setProfile(newData); // Update state lokal
+      setProfile(newData); 
       return { success: true };
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -97,7 +93,7 @@ export const HelloProvider = ({ children }) => {
 
   // --- 4. BOOKING LOGIC (REALTIME LISTENER) ---
   useEffect(() => {
-    // onSnapshot membuat data booking selalu update realtime tanpa refresh
+    // Mengambil data booking secara realtime
     const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const bookingsData = snapshot.docs.map(doc => ({
@@ -114,16 +110,16 @@ export const HelloProvider = ({ children }) => {
   const addBooking = async (newBooking) => {
     try {
       await addDoc(collection(db, "bookings"), {
-        userId: user?.uid, // PENTING: Simpan ID User
+        userId: user?.uid, // Simpan ID User agar bisa difilter di Profil
         patient_name: newBooking.patient,
         service: newBooking.service,
-        doctor_id: newBooking.doctor_id,
+        doctor_id: newBooking.doctor_id, 
         date: newBooking.date,
         time: newBooking.time,
         payment_method: newBooking.paymentMethod || 'Bayar di Klinik',
         price: newBooking.price || 0,
         status: 'Pending',
-        createdAt: new Date()
+        createdAt: new Date() 
       });
       return true;
     } catch (error) {
@@ -132,18 +128,20 @@ export const HelloProvider = ({ children }) => {
     }
   };
 
+  // --- 5. FUNGSI RESCHEDULE (YANG KEMARIN MUNGKIN HILANG/ERROR) ---
   const rescheduleBooking = async (bookingId, newDate, newTime) => {
     try {
       const bookingRef = doc(db, "bookings", bookingId);
       await updateDoc(bookingRef, {
         date: newDate,
         time: newTime,
-        status: 'Rescheduled', // Opsional: Beri tanda status berubah
+        status: 'Rescheduled', // Ubah status jadi Rescheduled
         updatedAt: new Date()
       });
       return true;
     } catch (error) {
       console.error("Gagal reschedule:", error);
+      alert("Gagal mengubah jadwal: " + error.message);
       return false;
     }
   };
@@ -169,7 +167,9 @@ export const HelloProvider = ({ children }) => {
     <HelloContext.Provider value={{ 
       user, logout, 
       profile, updateProfile,
-      bookings, loading, addBooking, updateBookingStatus, deleteBooking 
+      bookings, loading, 
+      addBooking, updateBookingStatus, deleteBooking, 
+      rescheduleBooking // <--- PASTIKAN INI ADA DI SINI!
     }}>
       {children}
     </HelloContext.Provider>
