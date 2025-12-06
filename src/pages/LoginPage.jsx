@@ -22,7 +22,6 @@ export default function LoginPage() {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible', // Invisible biar gak ganggu UI
         'callback': (response) => {
-          // reCAPTCHA solved
         }
       });
     }
@@ -48,7 +47,7 @@ export default function LoginPage() {
       // Request ke Firebase
       const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
       
-      setConfirmationResult(confirmation); // Simpan hasil buat verifikasi nanti
+      setConfirmationResult(confirmation); 
       setStep(2);
       alert("Kode OTP dikirim via SMS / WhatsApp Firebase!");
       
