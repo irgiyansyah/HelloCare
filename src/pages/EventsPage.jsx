@@ -25,7 +25,7 @@ export default function EventsPage() {
       time: "14.00 - 16.00 WITA",
       location: "Aula Hasanuddin, Makassar",
       price: "Gratis",
-      description: "Seminar eksklusif membahas teknologi terbaru dalam deteksi dini dan pencegahan kanker. Dihadirkan oleh spesialis onkologi terkemuka."
+      description: "Menghadapi tantangan kesehatan di abad ke-21, pemahaman mengenai pencegahan kanker tidak lagi sekadar wawasan umum, melainkan kebutuhan mendesak bagi setiap individu. Sesi ini akan mengupas tuntas metode pencegahan kanker berbasis sains modern, mulai dari pentingnya deteksi dini dengan teknologi skrining terbaru hingga adaptasi gaya hidup anti-karsinogenik yang praktis. Kami mengajak peserta untuk beralih dari sekadar mengobati menjadi proaktif mencegah, membekali diri dengan pengetahuan medis terkini untuk menekan risiko kanker secara signifikan demi kualitas hidup jangka panjang yang lebih baik."
     },
     {
       id: 2,
@@ -35,7 +35,7 @@ export default function EventsPage() {
       time: "10.00 - 12.00 WITA",
       location: "Zoom Meeting (Online)",
       price: "Rp 50.000",
-      description: "Bagaimana menjaga kewarasan di tengah gempuran media sosial? Temukan jawabannya bersama psikolog klinis kami."
+      description: "Di tengah arus informasi yang tak terbendung dan tuntutan konektivitas 24 jam, menjaga kewarasan menjadi tantangan tersendiri bagi masyarakat modern. Sesi ini didedikasikan untuk membedah dampak psikologis dari kehidupan digital, mulai dari fenomena fear of missing out (FOMO), kecemasan akibat media sosial, hingga digital burnout. Peserta akan diajak menyelami strategi membangun resiliensi mental, menetapkan batasan digital yang sehat, serta teknik manajemen stres yang efektif agar tetap produktif dan bahagia tanpa harus kehilangan jati diri di dunia maya."
     },
     {
       id: 3,
@@ -45,7 +45,7 @@ export default function EventsPage() {
       time: "09.00 - 11.00 WITA",
       location: "RS HelloCare Lt. 3",
       price: "Gratis",
-      description: "Panduan lengkap bagi orang tua untuk memenuhi kebutuhan nutrisi anak agar tumbuh kembang optimal dan mencegah stunting."
+      description: "Masa depan anak dimulai dari apa yang ada di piring makan mereka hari ini. Sesi parenting dan gizi ini hadir untuk menjawab kebingungan orang tua dalam memenuhi kebutuhan nutrisi esensial bagi generasi emas. Para ahli akan memaparkan panduan komprehensif mengenai komposisi gizi seimbang yang krusial untuk perkembangan otak dan fisik anak, serta strategi cerdas mengatasi masalah umum seperti picky eater atau kecanduan makanan cepat saji. Ini adalah panduan lengkap untuk memastikan anak tumbuh sehat, cerdas, dan terhindar dari risiko masalah kesehatan degeneratif di masa depan."
     },
     {
       id: 4,
