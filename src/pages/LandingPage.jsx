@@ -21,22 +21,65 @@ export default function LandingPage() {
     }
   };
 
+  // --- DATA DOKTER UPDATE (SUDAH ADA FOTO) ---
   const doctors = [
-    { name: "Dr Y K Mishra", specialty: "Orthopedics Surgeon", hospital: "Apollo Hospital" },
-    { name: "Dr. Sandeep ", specialty: "Orthopedics Surgeon", hospital: "MBBS" },
-    { name: "Dr. Rajeev Verma", specialty: "Orthopedics and Joint", hospital: "Apollo Hospital" },
-    { name: "Dr. Ajay Kaul", specialty: "Orthopedics Surgeon", hospital: "MBBS, DNB" },
-    { name: "Dr Naresh Trehan", specialty: "Cardiovascular Surgeon", hospital: "Surgeon" },
-    { name: "Dr Vinod Raina", specialty: "Medical Oncologist", hospital: "Oncology" },
-    { name: "Dr Arun Saroha", specialty: "Orthopedics", hospital: "MBBS" }
+    { 
+      id: 1,
+      name: "Dr Y K Mishra", 
+      specialty: "Orthopedics Surgeon", 
+      hospital: "Apollo Hospital",
+      image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop"
+    },
+    { 
+      id: 2,
+      name: "Dr. Sandeep", 
+      specialty: "Orthopedics Surgeon", 
+      hospital: "MBBS",
+      image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=200&h=200&fit=crop"
+    },
+    { 
+      id: 3,
+      name: "Dr. Rajeev Verma", 
+      specialty: "Orthopedics and Joint", 
+      hospital: "Apollo Hospital",
+      image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=200&h=200&fit=crop"
+    },
+    { 
+      id: 4,
+      name: "Dr. Ajay Kaul", 
+      specialty: "Orthopedics Surgeon", 
+      hospital: "MBBS, DNB",
+      image: "https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=200&h=200&fit=crop"
+    },
+    { 
+      id: 5,
+      name: "Dr Naresh Trehan", 
+      specialty: "Cardiovascular Surgeon", 
+      hospital: "Surgeon",
+      image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop"
+    },
+    { 
+      id: 6,
+      name: "Dr Vinod Raina", 
+      specialty: "Medical Oncologist specialist", 
+      hospital: "Oncology",
+      image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop"
+    },
+    { 
+      id: 7,
+      name: "Dr Arun Saroha", 
+      specialty: "Orthopedics specialist", 
+      hospital: "MBBS",
+      image: "https://images.unsplash.com/photo-1622902046580-2b47f47f5471?w=200&h=200&fit=crop"
+    }
   ];
 
   const testimonials = [
-    { name: "Muh. Fajri Farid", text: "Platform yang bagus! Saran saya tidak lancer, namun website ini membantu saya untuk memiliki obat dan pemeriksaan yang baik", rating: 3 },
-    { name: "Yunan Kresya", text: "Saya mengalami rusuh, sakit-sakitan, dan bahkan. Web ini membantu saya untuk mencari obat yang lebih yang untuk mengobati dan menyembuhkan penyakit saya", rating: 5 },
-    { name: "Abli Arqam", text: "Saya sering batuk dan yang terus yang terus yang terus yang hingga penglonakan dengan adanya web ini saya bisa menemukan obat dan mendapatkan untuk sembauh", rating: 5 },
+    { name: "Muh. Fajri Farid", text: "Platform yang bagus! Saran nya gacor, website ini membantu saya untuk memiliki obat dan pemeriksaan yang baik", rating: 5},
+    { name: "Adnan anan", text: "Saya mengalami rusuh, dan sakit-sakitan. Web ini membantu saya untuk mencari obat yang lebih yang untuk mengobati dan menyembuhkan penyakit saya", rating: 5 },
+    { name: "Abil Arqam", text: "Saya sering batuk dan yang terus yang terus yang terus yang hingga penglonakan dengan adanya web ini saya bisa menemukan obat dan mendapatkan untuk sembauh", rating: 5 },
     { name: "Rahmatullah Setiawan", text: "Beberapa hari ini mata saya sering sekali merah dan gatal, lewat web ini saya dapat berkonsultasi dengan dokter mata secara kendala yang saya alami.", rating: 4 },
-    { name: "Muh. Alif", text: "Saya mengalami gejala lever saya yang sering terjang sehian kali saya makan dengan mengalami alergi untuk dari obat mengobati penyakit apa yang sedang saya ini!!!", rating: 5 }
+    { name: "Muh. Alif Anshar", text: "Saya mengalami gejala lever saya yang sering terjadi sekian kali saya makan dengan mengalami alergi dan web ini membantu cara mengobati penyakit apa yang sedang saya derita ini!!!", rating: 5 }
   ];
 
   return (
@@ -118,14 +161,20 @@ export default function LandingPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-4">
           {doctors.map((doctor, idx) => (
             <div key={idx} className="bg-white rounded-xl p-4 shadow-sm text-center hover:shadow-md transition-shadow">
-              <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full"></div>
+              
+              {/* --- BAGIAN UPDATE: MENAMPILKAN FOTO --- */}
+              <img 
+                src={doctor.image} 
+                alt={doctor.name}
+                className="w-20 h-20 mx-auto mb-3 rounded-full object-cover border-2 border-blue-100 shadow-sm"
+              />
+              
               <h3 className="font-semibold text-sm mb-1">{doctor.name}</h3>
               <p className="text-xs text-gray-500 mb-1">{doctor.specialty}</p>
               <p className="text-xs text-gray-400 mb-3">{doctor.hospital}</p>
               
-              {/* --- LOGIKA BARU: TOMBOL CONSULT --- */}
               <button 
-                onClick={() => handleRestrictedAccess(`/doctor/${idx + 1}`)}
+                onClick={() => handleRestrictedAccess(`/doctor/${doctor.id}`)}
                 className="block w-full py-2 border border-blue-600 text-blue-600 rounded-lg text-xs hover:bg-blue-600 hover:text-white transition-colors"
               >
                 Consult Now
@@ -156,11 +205,10 @@ export default function LandingPage() {
             </p>
             <div className="bg-blue-900 text-white rounded-2xl p-6 flex justify-between items-center">
               <div>
-                <div className="text-2xl font-bold">1 October 2025</div>
-                <div className="text-sm opacity-90">14.00 - 16.00 WITA</div>
+                <div className="text-2xl font-bold">Desember 2025</div>
+                <div className="text-sm opacity-90">09.00 - 17.00 WITA</div>
               </div>
               
-              {/* --- LOGIKA BARU: TOMBOL PESAN SEKARANG --- */}
               <button 
                 onClick={() => handleRestrictedAccess('/events')}
                 className="bg-white text-blue-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
